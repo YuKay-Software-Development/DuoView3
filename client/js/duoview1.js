@@ -1,4 +1,5 @@
-var hostname = '5.189.165.114';
+//var hostname = '5.189.165.114';
+var hostname = 'localhost';
 var port = '9090';
 
 $(document).ready(function()
