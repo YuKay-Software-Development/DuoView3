@@ -1,0 +1,12 @@
+{
+  "name": "duo-view-node-js",
+  "version": "0.0.0",
+  "description": "DuoViewNodeJS",
+  "main": "app.js",
+  "author": {
+    "name": "Kayne"
+  },
+  "dependencies": {
+    "ws": "^3.3.3"
+  }
+}
