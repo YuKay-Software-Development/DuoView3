@@ -43,9 +43,13 @@
 		<div class="row">
 			<div class="col-md-8">
 				<div class="embed-responsive embed-responsive-16by9">
-					<video src="vid/big_buck_bunny.mp4" id="sharedVideo" />
+					<video src="vid/big_buck_bunny.mp4" id="htmlPlayer" />
 				</div>
 				
+				<div class="embed-responsive embed-responsive-16by9">
+					<div id="youtubePlayer"></div>
+				</div>
+
 				<div class="row" style="margin-top: 2px; margin-bottom: 20px;">
 					<div id="video-controls">
 						<div class="col-sm-1">
@@ -61,7 +65,7 @@
 						</div>
 						
 						<div class="col-sm-1">
-							<input type="range" id="volume-bar" min="0" max="1" step="0.1" value="1">
+							<input type="range" id="volume-bar" min="0" max="100" step="1" value="100">
 						</div>
 						
 						<div class="col-sm-2">
