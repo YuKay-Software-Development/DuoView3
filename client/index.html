@@ -2,16 +2,16 @@
 <html>
 	<head>
 		<meta charset='UTF-8' />
-		<title>Duoview</title>
+		<title>Duoview3</title>
 
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 		<style>
 			body {
 					background-color:#111111;
 					background:#111111;
-					color:#CCC;
-				}
-			
+					color:#000;
+				}	
+
 			.input-group-addon {
 					background-color:#222222;
 					color:#CCC;
@@ -30,7 +30,12 @@
 				
 			.well{
 					background:#222222;
+					color:#CCC;
 				}
+				
+			video::-webkit-media-controls {
+			  display: none;
+			}
 		</style>
 	</head>
 
@@ -38,26 +43,54 @@
 		<div class="row">
 			<div class="col-md-8">
 				<div class="embed-responsive embed-responsive-16by9">
-					<video src="vid/big_buck_bunny.mp4" id="sharedVideo" controls />
+					<video src="vid/big_buck_bunny.mp4" id="sharedVideo" />
 				</div>
-
+				
+				<div class="row" style="margin-top: 2px; margin-bottom: 20px;">
+					<div id="video-controls">
+						<div class="col-sm-1">
+							<button type="button" id="play-pause">Play</button>
+						</div>
+						
+						<div class="col-sm-7">
+							<input type="range" id="seek-bar" value="0">
+						</div>
+						
+						<div class="col-sm-1">
+							<button type="button" id="mute">Mute</button>
+						</div>
+						
+						<div class="col-sm-1">
+							<input type="range" id="volume-bar" min="0" max="1" step="0.1" value="1">
+						</div>
+						
+						<div class="col-sm-2">
+							<button type="button" id="full-screen">Full-Screen</button>
+						</div>
+					</div>
+				</div>
+				
 				<div class="row" style="margin-top: 20px; margin-bottom: 20px;">
-					<div class="col-sm-6">
+					<div class="col-sm-9">
 						<input id="requestUrl" type="text" class="form-control" placeholder="Video">
 					</div>
 					
-					<div class="col-sm-3">
-						<button id="selectVideo" class="form-control">Select</button>
+					<div class="col-sm-2">
+						<div class="form-group">
+							<select class="form-control" id="sel1">
+								<option>File</option>
+								<option>Youtube</option>
+							</select>
+						</div>
 					</div>
 					
-					<div class="col-sm-3">
-						<button id="syncVideo" class="form-control">Sync</button>
+					<div class="col-sm-1">
+						<button id="selectVideo" class="form-control">Select</button>
 					</div>
 				</div>
 			</div>
 
 			<div class="col-md-4">
-                <button id="makeMaster" class="form-control">Become Master</button>
 				<div class="input-group">
 					<span class="input-group-addon" id="Id">Null</span>
 					<input type="text" class="form-control" id="nameInput" placeholder="Name" aria-describedby="basic-addon1">
@@ -83,7 +116,7 @@
 
 		<footer>
 			<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-			<script src="js/duoview1.js"></script>
+			<script src="js/duoview3.js"></script>
 		</footer>
 	</body>
 </html>
