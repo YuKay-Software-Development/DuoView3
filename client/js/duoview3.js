@@ -1,5 +1,6 @@
 /* Authors: Olivier Schipper, Kayne Saridjo. All rights reserved. */
 
+var youtubePlayer, iframe;
 // This code loads the IFrame Player API code asynchronously
 var tag = document.createElement('script');
 
@@ -9,7 +10,6 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 // This function creates an <iframe> (and YouTube player)
 // after the API code downloads
-var youtubePlayer;
 
 function onYouTubeIframeAPIReady() {
 	youtubePlayer = new YT.Player('youtubePlayer', {
@@ -34,15 +34,29 @@ function onYouTubeIframeAPIReady() {
 
 // The API will call this function when the video player is ready
 function onPlayerReady(event) {
-	youtubePlayer.playVideo()
+	var youtubePlayer = event.target;
+	iframe = $('#youtubePlayer');
+	setupListener(); 
 }
 
+function setupListener (){
+document.getElementById("full-screen").addEventListener('click', playFullscreen);
+}
+
+function playFullscreen (){
+  youtubePlayer.playVideo();//won't work on mobile
+  
+  var requestFullScreen = iframe.requestFullScreen || iframe.mozRequestFullScreen || iframe.webkitRequestFullScreen;
+  if (requestFullScreen) {
+    requestFullScreen.bind(iframe)();
+  }
+}
 
 // This code destoys all player controlls
 
 // The API calls this function when the player's state changes
 function onPlayerStateChange(event) {
-	if (youtubePlayer.getPlayerState() == 2 ? !paused : paused) {
+	/*if (youtubePlayer.getPlayerState() == 2 ? !paused : paused) {
 		if (youtubePlayer.getPlayerState() == 2) {
 			youtubePlayer.playVideo();
 		} else {
@@ -50,7 +64,11 @@ function onPlayerStateChange(event) {
 		}
 	} else {
 		
-	}
+	}*/
+	var requestFullScreen = iframe.requestFullScreen || iframe.mozRequestFullScreen || iframe.webkitRequestFullScreen;
+			if (requestFullScreen) {
+				requestFullScreen.bind(iframe)();
+			}
 }
 
 var htmlPlayer = $("htmlPlayer"); 
@@ -70,12 +88,14 @@ $("htmlPlayer").click(function() {
 
 
 
-
+var htmlPlayer = $('#htmlPlayer').get(0);
+var youtubePlayer = youtubePlayer;
 
 var playerType = "youtube";
 var paused = true;
 var volume = 100;
 var muted = false;
+
 
 
 // Functions
@@ -164,10 +184,10 @@ function unMute() {
 	youtubePlayer.unMute();
 }
 
-function setVolume(volume) {
-	volume = volume;
-	htmlPlayer.volume = volume / 100;
-	youtubePlayer.setVolume(volume);
+function setVolume(nvolume) {
+	volume = nvolume;
+	htmlPlayer.volume = nvolume / 100;
+	youtubePlayer.setVolume(nvolume);
 }
 
 function fullscreen() {
@@ -183,12 +203,12 @@ function fullscreen() {
 		break;
 		
 		case "youtube":
-			if (youtubePlayer.requestFullscreen) {
-				youtubePlayer.requestFullscreen();
-			} else if (youtubePlayer.mozRequestFullScreen) {
-				youtubePlayer.mozRequestFullScreen(); // Firefox
-			} else if (youtubePlayer.webkitRequestFullscreen) {
-				youtubePlayer.webkitRequestFullscreen(); // Chrome and Safari
+			youtubePlayer.playVideo();
+
+			var requestFullScreen = iframe.requestFullScreen || iframe.mozRequestFullScreen || iframe.webkitRequestFullScreen;
+			console.log(requestFullScreen);
+			if (requestFullScreen) {
+				requestFullScreen.bind(iframe)();
 			}
 		break;
 	}
@@ -197,11 +217,11 @@ function fullscreen() {
 function getDuration() {
 	switch(playerType) {
 		case "html":
-			return htmlPlayer.duration
+			return htmlPlayer.duration;
 		break;
 		
 		case "youtube":
-			return youtubePlayer.getDuration()
+			return youtubePlayer.getDuration();
 		break;
 	}
 }
@@ -209,11 +229,11 @@ function getDuration() {
 function getCurrentTime() {
 	switch(playerType) {
 		case "html":
-			return htmlPlayer.currentTime
+			return htmlPlayer.currentTime;
 		break;
 		
 		case "youtube":
-			return youtubePlayer.getCurrentTime()()
+			return youtubePlayer.getCurrentTime();
 		break;
 	}
 }
@@ -254,21 +274,21 @@ muteButton.addEventListener("click", function() {
 		unMute();
 
 		// Update the button text
-		muteButton.innerHTML = "Unmute";
+		muteButton.innerHTML = "Mute";
 	} else {
 		// mute the video
 		mute();
 
 		// Update the button text
-		muteButton.innerHTML = "Mute";
+		muteButton.innerHTML = "Unmute";
 	}
 });
 
 
 // Event listener for the full-screen button
-fullScreenButton.addEventListener("click", function() {
+/*fullScreenButton.addEventListener("click", function() {
 	fullscreen();
-});
+});*/
 
 
 // Event listener for the seek bar
@@ -303,6 +323,7 @@ seekBar.addEventListener("mouseup", function() {
 
 // Event listener for the volume bar
 volumeBar.addEventListener("change", function() {
+	console.log("test");
 	// Update the video volume
 	setVolume(volumeBar.value);
 });

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset='UTF-8' />
+		<title>Duoview3</title>
+
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<style>
+			body {
+					background-color:#111111;
+					background:#111111;
+					color:#000;
+				}	
+
+			.input-group-addon {
+					background-color:#222222;
+					color:#CCC;
+				}
+				
+			.btn {
+					background-color:#222222;
+					color:#CCC;
+					border: 1px solid #CCC;
+				}
+				
+			.form-control {
+					background-color:#222222;
+					color:#CCC;
+				}
+				
+			.well{
+					background:#222222;
+					color:#CCC;
+				}
+				
+			video::-webkit-media-controls {
+			  display: none;
+			}
+		</style>
+	</head>
+
+	<body style="padding: 35px;">
+		<h1>One-click play+fullscreen via YouTube API</h1>
+Suggested code from this <a href="http://stackoverflow.com/a/20289540/288906">StackOverflow answer</a>
+
+<h2>Instructions</h2>
+<ol>
+  <li>Click on [play fullscreen]</li>
+  <li>Click on the fullscreen button in youtube's player to exit fullscreen</li>
+</ol>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<button>play fullscreen</button><br>
+<div id="player"></div>
+
+## Safari 8
+
+It works perfectly:
+
+0. Enters fullscreen
+0. Exits fullscreen
+
+## Firefox 35
+
+Buggy, annoying but working:
+
+0. Enters fullscreen (on Codepen.io)
+0. Enters fullscreen (YouTube.com)
+0. Third click: Exits fullscreen
+
+## Chrome 40
+
+Buggy, broken:
+
+0. Enters fullscreen (on Codepen.io)
+0. Does nothing
+0. Third click: Exits fullscreen but the video fills the iframe, effectively breaking the site. <a href="https://i.imgur.com/CHibfEN.png" target="_blank">Screenshot</a>
+
+
+## Mobile browsers
+
+This is the default behavior on iPhone, but it cannot work anywhere else (Android, iPad) since 
+
+* to `play()` a video or to `requestFullScreen()` you need a user tap **in the same document** (read: not across the iframe)
+
+This means that
+
+* you can't call `requestFullScreen()` when the video emits the event `onplay`
+* you can't trigger `play()` via YouTube API (it would cross the frame) **and** call `requestFullScreen()` in the same tap
+
+So with one tap **either** you play the video **or** get it fullscreen; you'll always need two separate taps if you use YouTube.
+		<footer>
+			<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+			<script>var player, iframe;
+var $ = document.querySelector.bind(document);
+
+// init player
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('player', {
+    height: '200',
+    width: '300',
+    videoId: 'vKK-1lMNQ_4',
+    events: {
+      'onReady': onPlayerReady
+    }
+  });
+}
+
+// when ready, wait for clicks
+function onPlayerReady(event) {
+  var player = event.target;
+  iframe = $('#player');
+  setupListener(); 
+}
+
+function setupListener (){
+$('button').addEventListener('click', playFullscreen);
+}
+
+function playFullscreen (){
+  player.playVideo();//won't work on mobile
+  
+  var requestFullScreen = iframe.requestFullScreen || iframe.mozRequestFullScreen || iframe.webkitRequestFullScreen;
+  if (requestFullScreen) {
+    requestFullScreen.bind(iframe)();
+  }
+}
+</script>
+		</footer>
+	</body>
+</html>
