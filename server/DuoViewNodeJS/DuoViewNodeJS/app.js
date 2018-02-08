@@ -1,36 +1,32 @@
+var app = require('express')();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
 
-const WebSocket = require('ws');
+var scripts = ['/js/duoview1.js', '/js/ServerConnection.js']
 
-const wss = new WebSocket.Server({ port: 8080 });
+app.get('/', function (req, res) {
+    res.sendFile(__dirname + '/Client/index.html');
+});
 
-function heartbeat() {
-    this.isAlive = true;
-}
-
-
-wss.on('connection', function connection(ws) {
-    ws.on('message', function incoming(message) {
-        console.log('received: %s', message);
+scripts.forEach(function (item, index, array) {
+    app.get(item, function (req, res) {
+        res.sendFile(__dirname + '/Client' + item);
     });
+});
 
-    ws.on("close", function (code, reason) {
-        console.log("Connection closed")
+io.on('connection', function (socket) {
+    console.log('a user connected');
+    socket.broadcast()
+
+    socket.on('hello', function (data) {
+        console.log(data);
     });
-
-    ws.isAlive = true;
-    ws.on('pong', heartbeat);
-    ws.send('something');
 
 
 });
 
 
 
-const interval = setInterval(function ping() {
-    wss.clients.forEach(function each(ws) {
-        if (ws.isAlive === false) return ws.terminate();
-
-        ws.isAlive = false;
-        ws.ping('', false, true);
-    });
-}, 30000);
+http.listen(80, function () {
+    console.log('listening on *:80');
+});
