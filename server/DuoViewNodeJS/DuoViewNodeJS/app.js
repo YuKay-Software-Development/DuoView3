@@ -3,9 +3,9 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 var scripts = ['/js/duoview1.js', '/js/ServerConnection.js']
+var files = ['/big_buck_bunny.mp4']
 
 var master = 0;
-
 var connectedClients = [];
 
 app.get('/', function (req, res) {
@@ -18,31 +18,55 @@ scripts.forEach(function (item, index, array) {
     });
 });
 
+files.forEach(function (item, index, array) {
+    app.get(item, function (req, res) {
+        res.sendFile(__dirname + '/Client' + item);
+    });
+});
+
+
+
+function setmaster(client) {
+    master = client.id;
+    socket.broadcast("notifyUser", connectedClients[master] + " was assigned master");
+    console.log(connectedClients[master] + " is now master!");
+}
+
 io.on('connection', function (socket) {
-    console.log(socket.id + 'connected');
     connectedClients[socket.id] = "User " + socket.id;
     var name = connectedClients[socket.id];
+    socket.emit('name', connectedClients[socket.id]);
 
+    console.log(socket.id + ' connected');
     console.log(connectedClients[socket.id]);
     socket.on('pause', (time) => {
+        console.log(name + ": Paused, Time: " + time);
         socket.broadcast.emit('pause', (name, time));
     });
 
     socket.on('play', () => {
+        console.log(name + ": Played");
+
         socket.broadcast.emit('play', name);
     });
 
     socket.on('seeked', (data) => {
+        console.log(name + ": seeked to " + data);
+
         socket.broadcast.emit('seeked', (name, data));
     });
 
-    socket.on('select', (video) => {
-        socket.broadcast.emit('select', (name, video));
+    socket.on('select', (jeff) => {
+        console.log(name + " selected: " + jeff);
+
+        socket.broadcast.emit('select', (name, jeff));
     });
+
+    
 
     socket.on('sync_request', () => {
         if (master != 0) {
-            if (socket.id == master.id) {
+            if (socket.id == master) {
                 connectedClients.forEach(function (item, index) {
                     socket.to(item).emit('forceSync');
                 });
@@ -68,12 +92,12 @@ io.on('connection', function (socket) {
         console.log(data);
     });
 
-    socket.on('changeName', (name, data) => {
+    socket.on('changeName', (data) => {
         console.log(data);
     });
 
     socket.on('chat', function (data) {
-        console.log(data);
+        console.log(name + ":" + data);
     });
 
 

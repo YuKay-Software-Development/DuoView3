@@ -8,7 +8,7 @@ var socket = io();
 $(document).ready(function()
 {
     var video = $('#sharedVideo').get(0);
-	var name;
+	//var name;
 	var sync = false;
 	var sendpermplay = true;
 	var sendpermpause = true;
@@ -20,15 +20,19 @@ $(document).ready(function()
     subscribeEvents();
 
 
-    socket.on('connect', (name) => {
+    socket.on('connect', () => {
         notifyUser("Listening for events at: " + "OFFICIAL YUKAY SERVER INC" + ".");
 
-        $('#Id').text("User" + name);
-        checkCookie();
+        
 
         sync = true;
         socket.emit('sync_request');
     });	
+
+    socket.on('name', (name) => {
+        $('#Id').text("User" + name);
+        checkCookie();
+    });
 
     socket.on('notifyUser', (notice) => {
         notifyUser(notice);
@@ -53,11 +57,12 @@ $(document).ready(function()
         notifyUser(name + " seeked the video to " + time + ".");
     });
 
-    socket.on('select', (name, video) => {
-        video.src = video;
+    socket.on('select', (name, jeff) => {
+        console.log(name + " " + jeff);
+        video.src = jeff;
         video.load();
 
-        notifyUser(name + " selected the video: " + video, '#2293ff');
+        notifyUser(name + " selected the video: " + jeff, '#2293ff');
     });
 
     socket.on('nosync', (notice) => {
