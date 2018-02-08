@@ -16,7 +16,7 @@ scripts.forEach(function (item, index, array) {
 
 io.on('connection', function (socket) {
     console.log('a user connected');
-    socket.broadcast()
+    //socket.broadcast()
 
     socket.on('hello', function (data) {
         console.log(data);
