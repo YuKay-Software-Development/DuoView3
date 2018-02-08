@@ -57,12 +57,12 @@ $(document).ready(function()
         notifyUser(name + " seeked the video to " + time + ".");
     });
 
-    socket.on('select', (name, jeff) => {
-        console.log(name + " " + jeff);
-        video.src = jeff;
+    socket.on('select', (name, source) => {
+        console.log(source + " ");
+        video.src = source;
         video.load();
 
-        notifyUser(name + " selected the video: " + jeff, '#2293ff');
+        notifyUser(name + " selected the video: " + source, '#2293ff');
     });
 
     socket.on('nosync', (notice) => {

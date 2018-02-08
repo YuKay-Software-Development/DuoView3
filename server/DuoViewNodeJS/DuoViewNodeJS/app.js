@@ -41,7 +41,7 @@ io.on('connection', function (socket) {
     console.log(connectedClients[socket.id]);
     socket.on('pause', (time) => {
         console.log(name + ": Paused, Time: " + time);
-        socket.broadcast.emit('pause', (name, time));
+        socket.broadcast.emit('pause', name, time);
     });
 
     socket.on('play', () => {
@@ -53,13 +53,13 @@ io.on('connection', function (socket) {
     socket.on('seeked', (data) => {
         console.log(name + ": seeked to " + data);
 
-        socket.broadcast.emit('seeked', (name, data));
+        socket.broadcast.emit('seeked', name, data);
     });
 
-    socket.on('select', (jeff) => {
-        console.log(name + " selected: " + jeff);
+    socket.on('select', (source) => {
+        console.log(name + " selected: " + source);
 
-        socket.broadcast.emit('select', (name, jeff));
+        socket.broadcast.emit('select', name, source);
     });
 
     
@@ -74,10 +74,10 @@ io.on('connection', function (socket) {
             }
             else {
                 try {
-                    socket.to(master).emit('syncRequest', (name, "Forcing everyone to sync with master"));
+                    socket.to(master).emit('syncRequest', name, "Forcing everyone to sync with master");
                 }
                 catch (err) {
-                    socket.to(socket).emit('nosync', (name, "Master has disconnected"));
+                    socket.to(socket).emit('nosync', name, "Master has disconnected");
                 }
             }
 
@@ -98,6 +98,8 @@ io.on('connection', function (socket) {
 
     socket.on('chat', function (data) {
         console.log(name + ":" + data);
+
+        socket.broadcast.emit('chat', name, data);
     });
 
 
