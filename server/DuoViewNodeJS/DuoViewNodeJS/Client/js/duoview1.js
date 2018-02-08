@@ -4,10 +4,10 @@ var port = '9090';
 
 var socket = io();
 
+
 $(document).ready(function()
 {
     var video = $('#sharedVideo').get(0);
-    var user_id;
 	var name;
 	var sync = false;
 	var sendpermplay = true;
@@ -19,125 +19,82 @@ $(document).ready(function()
 
     subscribeEvents();
 
-    websocket = new WebSocket('ws://' + hostname + ':' + port + '/'); 
-	
-    websocket.onopen = function(event) 
-    {
-        notifyUser("Listening for events at: " + event.currentTarget.url + ".");
-    };
 
-	
-	
-    websocket.onmessage = function(event) 
-    {
-        var message = JSON.parse(event.data);
-        var action = message.action;
+    socket.on('connect', (name) => {
+        notifyUser("Listening for events at: " + "OFFICIAL YUKAY SERVER INC" + ".");
 
-        if(message.error != undefined)
-        {
-            notifyUser(message.error, 'red');
-			
-            return;
-        }
+        $('#Id').text("User" + name);
+        checkCookie();
 
-        if(user_id == undefined)
-        {
-            user_id = message.user_id;
-			name = message.name;
-			$('#Id').text(name);
-            
-			checkCookie();
-			
-            sync = true;
-            websocket.send(JSON.stringify(
-            {
-                action: 'sync_request',
-            }));
-        }
+        sync = true;
+        socket.emit('sync_request');
+    });	
 
-        switch(action)
-        {
-            case "notifyUser":
-                notifyUser(message.notice);
-			break;
-            
-            case "play":
-                safePlay(video);
+    socket.on('notifyUser', (notice) => {
+        notifyUser(notice);
+    });
 
-                notifyUser(message.name + " played the video.");
-            break;
+    socket.on('play', (name) => {
+        safePlay(video);
 
-            case "pause":
+        notifyUser(name + " played the video.");
+    });
+
+    socket.on('pause', (name, time) => {
+        safePause(video);
+        safeTime(video, time);
+
+        notifyUser(name + " paused the video.");
+    });
+
+    socket.on('seeked', (name, time) => {
+        safeTime(video, time);
+
+        notifyUser(name + " seeked the video to " + time + ".");
+    });
+
+    socket.on('select', (name, video) => {
+        video.src = video;
+        video.load();
+
+        notifyUser(name + " selected the video: " + video, '#2293ff');
+    });
+
+    socket.on('nosync', (notice) => {
+        sync = false;
+        notifyUser("Server: " + notice);
+    });
+
+    socket.on('syncRequest', (name) => {
+        socket.emit('sync', video.currentTime, video.src, video.paused);
+        notifyUser(name + " Requested Synchronization");
+        sync = false;
+    });
+
+    socket.on('forceSync', () => {
+        sync = true;
+    });
+
+    socket.on('sync', (name, video, time, paused) => {
+        if (sync == true) {
+            notifyUser("Synchronized with " + name);
+            if (video.src != video) {
+                video.src = video;
+            }
+            safeTime(video, time);
+            if (paused == true) {
                 safePause(video);
-                safeTime(video, message.time);
-
-                notifyUser(message.name + " paused the video.");
-            break;
-
-            case "seeked":
-                safeTime(video, message.time);
-
-                notifyUser(message.name + " seeked the video to " + message.time + ".");
-            break;
-
-            case "select":
-                video.src = message.video;
-                video.load();
-
-                notifyUser(message.name + " selected the video: " + message.video, '#2293ff');
-            break;
-			
-			case "nosync":
-                sync = false;
-                notifyUser("Server: " + message.notice);
-            break;
-			
-			case "syncRequest":
-                websocket.send(JSON.stringify(
-                {
-                    action: 'sync',
-                    time: video.currentTime,
-                    video: video.src,
-                    paused: video.paused
-                }));   
-				notifyUser(message.name + " Requested Synchronization");
-				sync = false;
-			break;
-				
-			case "forceSync":
-				sync = true;
-				websocket.send(JSON.stringify(
-				{
-					action: 'sync_request',
-				}));
-            break;
-			
-			case "sync":
-                if (sync == true)
-				{
-					notifyUser("Synchronized with " + message.name);
-					if (video.src != message.video)
-                    {
-                        video.src = message.video;
-                    }
-					safeTime(video, message.time);
-                    if (message.paused == true)
-                    {
-                        video.pause();
-                    }
-                    else if (message.paused == false)
-                    {
-                        safePlay(video);
-                    }
-				}
-                sync = false;
-            break;
-			
-			case "chat":
-				notifyUser(message.name + ": " + message.message, "#DD00DD");	
-            break;
+            }else{
+                safePlay(video);
+            }
         }
-    };
+        sync = false;
+    });
+
+    socket.on('chat', (name, message) => {
+        notifyUser(name + ": " + message, "#DD00DD");	
+    });
+
 
 	$('#changeName').click(function()
     {
@@ -145,15 +102,9 @@ $(document).ready(function()
 		$('#nameInput').val("");
 		$('#Id').text(name);
 
-        socket.emit('hello', 'can you hear me?');
-
-        websocket.send(JSON.stringify(
-        {
-            action: 'changeName',
-            name: name
-        }));
 		
-		if (name != "" && name != null) {
+        if (name != "" && name != null) {
+            socket.emit('changeName', name);
 			setCookie("username", name, 365);
 		}
     });
@@ -162,41 +113,26 @@ $(document).ready(function()
     {
         var chat = $('#chatInput').val();
 		$('#chatInput').val("");
-		
-        websocket.send(JSON.stringify(
-        {
-            action: 'chat',
-            message: chat
-        }));
+
+        socket.emit('chat', chat);
     });
 	
     $('#selectVideo').click(function()
     {
         video.src = $('#requestUrl').val();
 
-        websocket.send(JSON.stringify(
-        {
-            action: 'select',
-            video: video.src
-        }));
+        socket.emit('select', video.src);
     });
 	
 	$('#syncVideo').click(function()
     {
-		sync = true;
-        websocket.send(JSON.stringify(
-        {
-            action: 'sync_request',
-        }));
+        sync = true;
+        socket.emit('sync_request');
     });
     
     $('#makeMaster').click(function()
     {	
-        websocket.send(JSON.stringify(
-        {
-            action: 'make_master',
-        }));
-		
+        socket.emit('make_master');
     });
 
     function subscribeEvents()
@@ -212,12 +148,8 @@ $(document).ready(function()
     function onPause()
     {
 		if (sendpermpause){
-			receive = false;
-			websocket.send(JSON.stringify(
-			{
-				action: 'pause',
-				time: this.currentTime
-			}));
+            receive = false;
+            socket.emit('pause', this.currentTime);
 		}else{
 			sendpermpause = true;
 		}
@@ -226,11 +158,8 @@ $(document).ready(function()
     function onPlay()
     {
 		if (sendpermplay){
-			receive = false;
-			websocket.send(JSON.stringify(
-			{
-				action: 'play'
-			}));
+            receive = false;
+            socket.emit('play');
 		}else{
 			sendpermplay = true;
 		}
@@ -239,12 +168,8 @@ $(document).ready(function()
     function onSeeked()
     {
 		if (sendpermseeked){
-			receive = false;
-			websocket.send(JSON.stringify(
-			{
-				action: 'seeked',
-				time: this.currentTime
-			}));
+            receive = false;
+            socket.emit('seeked', this.currentTime);
 		}else{
 			sendpermseeked = true;
 		}
@@ -262,10 +187,12 @@ $(document).ready(function()
 	
 	function safePause(tvideo)
 	{
-		if (receive){
-			sendpermpause = false;
-			tvideo.pause();
-		}
+        if (receive) {
+            sendpermpause = false;
+            tvideo.pause();
+        }else{
+            receive = true;
+        }
 	}
 	
 	function safeTime(tvideo, ttime)
@@ -284,12 +211,8 @@ $(document).ready(function()
 		{
 			var chat = $('#chatInput').val();
 			$('#chatInput').val("");
-		
-			websocket.send(JSON.stringify(
-			{
-				action: 'chat',
-				message: chat
-			}));
+
+            socket.emit('chat', chat);
 		}
 	}
 	
@@ -300,14 +223,9 @@ $(document).ready(function()
 			name = $('#nameInput').val();
 			$('#nameInput').val("");
 			$('#Id').text(name);
-		
-			websocket.send(JSON.stringify(
-			{
-				action: 'changeName',
-				name: name
-			}));
 			
-			if (name != "" && name != null) {
+            if (name != "" && name != null) {
+                socket.emit('changeName', name);
 				setCookie("username", name, 365);
 			}
 		}
@@ -342,22 +260,18 @@ $(document).ready(function()
 		if (user != "") {
 			name = user
 			$('#Id').text(name);
-			
-			websocket.send(JSON.stringify(
-			{
-				action: 'changeName',
-				name: name
-			}));
+
+            socket.emit('changeName', name);
 		}
 	}
 	
 	var escapeMap = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': '&quot;',
-    "'": '&#39;',
-    "/": '&#x2F;'
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': '&quot;',
+        "'": '&#39;',
+        "/": '&#x2F;'
 	};
 	
 	var unescapeMap = {
